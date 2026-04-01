@@ -10,6 +10,14 @@
 
 **Specs:** `docs/superpowers/specs/2026-04-01-autotune-plugin-design.md` and `docs/superpowers/specs/2026-04-01-autotune-best-practices-spec.md`
 
+**Implementation rules for agentic workers (Haiku/Sonnet):**
+- Each task is self-contained. Never read other tasks to understand the current one.
+- Every step is either "create/edit a file with this exact content" or "run this command and check this output."
+- If a code block follows a step, that is the COMPLETE file content — write it verbatim, do not paraphrase or summarize.
+- Do NOT read the spec files. Everything you need is in this plan.
+- Do NOT add features, comments, docstrings, or improvements beyond what's shown.
+- Commit messages are provided — use them exactly.
+
 ---
 
 ## File Map
@@ -86,6 +94,8 @@ Task 15 (integration) < Task 14
 
 - [ ] **Step 1: Update plugin.json with full metadata**
 
+Replace the ENTIRE content of `.claude-plugin/plugin.json` with:
+
 ```json
 {
   "name": "autotune",
@@ -103,6 +113,8 @@ Task 15 (integration) < Task 14
 ```
 
 - [ ] **Step 2: Create state/README.md**
+
+Create file `state/README.md` with the following COMPLETE content:
 
 ```markdown
 # Autotune State Directory
@@ -156,6 +168,8 @@ Overall: equal-weighted average (v1). Trend: delta from previous run.
 ```
 
 - [ ] **Step 3: Create tests/helpers.sh**
+
+Create file `tests/helpers.sh` with the following COMPLETE content:
 
 ```bash
 #!/usr/bin/env bash
@@ -271,9 +285,9 @@ git commit -m "feat: plugin scaffold, state docs, test helpers"
 **Files:**
 - Create: `skills/autotune-knowledge/references/BEST_PRACTICES.md`
 
-**Reference:** `docs/superpowers/specs/2026-04-01-autotune-best-practices-spec.md` section 3
-
 - [ ] **Step 1: Create the file**
+
+Create file `skills/autotune-knowledge/references/BEST_PRACTICES.md` with the following COMPLETE content:
 
 ```markdown
 <!-- autotune:best-practices v1.0.0 -->
@@ -353,6 +367,8 @@ git commit -m "feat: add BEST_PRACTICES.md reference file (~1030 tokens)"
 
 - [ ] **Step 1: Create permissions.md**
 
+Create file `skills/autotune-knowledge/heuristics/permissions.md` with the following COMPLETE content:
+
 ```markdown
 # Permissions Heuristics
 
@@ -391,6 +407,8 @@ Only proceed with transcript analysis if user consents. Skip transcript-dependen
 ```
 
 - [ ] **Step 2: Create claudemd.md**
+
+Create file `skills/autotune-knowledge/heuristics/claudemd.md` with the following COMPLETE content:
 
 ```markdown
 # CLAUDE.md Heuristics
@@ -431,6 +449,8 @@ Use `char_count / 3` as conservative estimate for markdown-heavy content. `char_
 
 - [ ] **Step 3: Create model-config.md**
 
+Create file `skills/autotune-knowledge/heuristics/model-config.md` with the following COMPLETE content:
+
 ```markdown
 # Model Configuration Heuristics
 
@@ -470,6 +490,8 @@ Source: `costHook.ts`, `query.ts`, `cost-tracker.ts`
 ```
 
 - [ ] **Step 4: Create plugins.md**
+
+Create file `skills/autotune-knowledge/heuristics/plugins.md` with the following COMPLETE content:
 
 ```markdown
 # Plugin Health Heuristics
@@ -512,6 +534,8 @@ Source: `utils/plugins/pluginLoader.ts`
 ```
 
 - [ ] **Step 5: Create mcp.md**
+
+Create file `skills/autotune-knowledge/heuristics/mcp.md` with the following COMPLETE content:
 
 ```markdown
 # MCP Server Heuristics
@@ -567,6 +591,8 @@ git commit -m "feat: add heuristic files for all 5 diagnostic areas"
 - Create: `skills/autotune-knowledge/SKILL.md`
 
 - [ ] **Step 1: Create SKILL.md**
+
+Create file `skills/autotune-knowledge/SKILL.md` with the following COMPLETE content:
 
 ```markdown
 ---
@@ -628,6 +654,8 @@ git commit -m "feat: add autotune-knowledge skill with heuristic references"
 - Create: `tests/test-gate-mechanical.sh`
 
 - [ ] **Step 1: Write the test file**
+
+Create file `tests/test-gate-mechanical.sh` with the following COMPLETE content:
 
 ```bash
 #!/usr/bin/env bash
@@ -744,6 +772,8 @@ Expected: FAIL (gate-mechanical.sh doesn't exist yet)
 
 - [ ] **Step 3: Implement gate-mechanical.sh**
 
+Create file `scripts/gate-mechanical.sh` with the following COMPLETE content:
+
 ```bash
 #!/usr/bin/env bash
 # gate-mechanical.sh — PreToolUse Write/Edit guard
@@ -832,6 +862,8 @@ git commit -m "feat: gate-mechanical.sh with block rules enforcement + tests"
 - Create: `tests/test-audit-write.sh`
 
 - [ ] **Step 1: Write the test file**
+
+Create file `tests/test-audit-write.sh` with the following COMPLETE content:
 
 ```bash
 #!/usr/bin/env bash
@@ -922,6 +954,8 @@ bash tests/test-audit-write.sh
 Expected: FAIL
 
 - [ ] **Step 3: Implement audit-write.sh**
+
+Create file `scripts/audit-write.sh` with the following COMPLETE content:
 
 ```bash
 #!/usr/bin/env bash
@@ -1029,6 +1063,8 @@ git commit -m "feat: audit-write.sh with hot file logging + rotation + tests"
 
 - [ ] **Step 1: Write the test file**
 
+Create file `tests/test-session-health.sh` with the following COMPLETE content:
+
 ```bash
 #!/usr/bin/env bash
 # Tests for session-health.sh
@@ -1105,6 +1141,8 @@ bash tests/test-session-health.sh
 Expected: FAIL
 
 - [ ] **Step 3: Implement session-health.sh**
+
+Create file `scripts/session-health.sh` with the following COMPLETE content:
 
 ```bash
 #!/usr/bin/env bash
@@ -1232,6 +1270,8 @@ git commit -m "feat: session-health.sh with stale run detection + integrity chec
 
 - [ ] **Step 1: Create hooks.json**
 
+Create file `hooks/hooks.json` with the following COMPLETE content:
+
 ```json
 {
   "hooks": {
@@ -1297,6 +1337,8 @@ git commit -m "feat: hooks.json wiring scripts to PreToolUse, PostToolUse, Sessi
 - Create: `agents/permissions-tuner.md`
 
 - [ ] **Step 1: Create the agent**
+
+Create file `agents/permissions-tuner.md` with the following COMPLETE content:
 
 ```markdown
 ---
@@ -1429,6 +1471,8 @@ git commit -m "feat: permissions-tuner agent — settings audit + transcript ana
 
 - [ ] **Step 1: Create the agent**
 
+Create file `agents/claudemd-tuner.md` with the following COMPLETE content:
+
 ```markdown
 ---
 name: claudemd-tuner
@@ -1495,7 +1539,23 @@ When fixing `cmd-bp-001`:
 
 ## Output Format
 
-Same as permissions-tuner: JSON array of findings with standard schema.
+Return findings as JSON array. Each finding:
+
+```json
+{
+  "id": "cmd-xxx-NNN",
+  "area": "claudemd",
+  "severity": "critical|warning|info",
+  "title": "Short description",
+  "description": "Detailed explanation with token impact",
+  "fix": {
+    "type": "edit|inject|suggest|report",
+    "target": "~/.claude/CLAUDE.md",
+    "patch": {}
+  },
+  "idempotent": true
+}
+```
 
 Fix types:
 - `edit` — modify CLAUDE.md directly (remove duplicate lines)
@@ -1505,7 +1565,18 @@ Fix types:
 
 ## Persistence
 
-Save to `~/.claude/autotune/findings/claudemd.json` with same schema as permissions-tuner.
+Save findings to `~/.claude/autotune/findings/claudemd.json`:
+
+```json
+{
+  "area": "claudemd",
+  "timestamp": "ISO-8601",
+  "findings": [...],
+  "score": 0-100
+}
+```
+
+Score: `100 - (critical * 20 + warning * 5 + info * 1)`, clamped 0-100.
 ```
 
 - [ ] **Step 2: Commit**
@@ -1523,6 +1594,8 @@ git commit -m "feat: claudemd-tuner agent — token hygiene + BEST_PRACTICES inj
 - Create: `agents/model-tuner.md`
 
 - [ ] **Step 1: Create the agent**
+
+Create file `agents/model-tuner.md` with the following COMPLETE content:
 
 ```markdown
 ---
@@ -1579,11 +1652,42 @@ Read `env.CLAUDE_CODE_MAX_OUTPUT_TOKENS`.
 
 ## Output Format
 
-Same standard finding schema. Fix type: `env-set` (add/modify env var in settings.json) or `env-remove` (remove env var).
+Return findings as JSON array. Each finding:
+
+```json
+{
+  "id": "model-xxx-NNN",
+  "area": "model",
+  "severity": "critical|warning|info",
+  "title": "Short description",
+  "description": "Detailed explanation with cost impact estimate",
+  "fix": {
+    "type": "env-set|env-remove",
+    "target": "~/.claude/settings.json",
+    "patch": {"env": {"VAR_NAME": "value"}}
+  },
+  "idempotent": true
+}
+```
+
+Fix types:
+- `env-set` — add or modify env var in settings.json `env` block
+- `env-remove` — remove env var from settings.json `env` block
 
 ## Persistence
 
-Save to `~/.claude/autotune/findings/model.json`.
+Save findings to `~/.claude/autotune/findings/model.json`:
+
+```json
+{
+  "area": "model",
+  "timestamp": "ISO-8601",
+  "findings": [...],
+  "score": 0-100
+}
+```
+
+Score: `100 - (critical * 20 + warning * 5 + info * 1)`, clamped 0-100.
 ```
 
 - [ ] **Step 2: Commit**
@@ -1601,6 +1705,8 @@ git commit -m "feat: model-tuner agent — caching, thinking tokens, cost optimi
 - Create: `agents/plugin-tuner.md`
 
 - [ ] **Step 1: Create the agent**
+
+Create file `agents/plugin-tuner.md` with the following COMPLETE content:
 
 ```markdown
 ---
@@ -1655,13 +1761,42 @@ For each plugin with hooks:
 
 ## Output Format
 
-Standard finding schema. Fix types:
+Return findings as JSON array. Each finding:
+
+```json
+{
+  "id": "plug-xxx-NNN",
+  "area": "plugins",
+  "severity": "critical|warning|info",
+  "title": "Short description",
+  "description": "Detailed explanation",
+  "fix": {
+    "type": "settings-merge|report",
+    "target": "~/.claude/settings.json",
+    "patch": {}
+  },
+  "idempotent": true
+}
+```
+
+Fix types:
 - `settings-merge` — remove dead plugin reference from settings.json
 - `report` — show conflicts (user decides which plugin to keep)
 
 ## Persistence
 
-Save to `~/.claude/autotune/findings/plugins.json`.
+Save findings to `~/.claude/autotune/findings/plugins.json`:
+
+```json
+{
+  "area": "plugins",
+  "timestamp": "ISO-8601",
+  "findings": [...],
+  "score": 0-100
+}
+```
+
+Score: `100 - (critical * 20 + warning * 5 + info * 1)`, clamped 0-100.
 ```
 
 - [ ] **Step 2: Commit**
@@ -1679,6 +1814,8 @@ git commit -m "feat: plugin-tuner agent — ghost detection, namespace conflicts
 - Create: `agents/mcp-tuner.md`
 
 - [ ] **Step 1: Create the agent**
+
+Create file `agents/mcp-tuner.md` with the following COMPLETE content:
 
 ```markdown
 ---
@@ -1737,7 +1874,25 @@ Two server configs with identical command+args → `mcp-dup-001` (warning).
 
 ## Output Format
 
-Standard finding schema. Fix types:
+Return findings as JSON array. Each finding:
+
+```json
+{
+  "id": "mcp-xxx-NNN",
+  "area": "mcp",
+  "severity": "critical|warning|info",
+  "title": "Short description",
+  "description": "Detailed explanation with latency data",
+  "fix": {
+    "type": "mcp-disable|env-set|report",
+    "target": "~/.claude/.mcp.json",
+    "patch": {}
+  },
+  "idempotent": true
+}
+```
+
+Fix types:
 - `mcp-disable` — remove/comment out dead server in .mcp.json
 - `env-set` — set MCP_TIMEOUT in settings.json env
 - `report` — show server health matrix
@@ -1756,7 +1911,18 @@ MCP Server Health:
 
 ## Persistence
 
-Save to `~/.claude/autotune/findings/mcp.json`.
+Save findings to `~/.claude/autotune/findings/mcp.json`:
+
+```json
+{
+  "area": "mcp",
+  "timestamp": "ISO-8601",
+  "findings": [...],
+  "score": 0-100
+}
+```
+
+Score: `100 - (critical * 20 + warning * 5 + info * 1)`, clamped 0-100.
 ```
 
 - [ ] **Step 2: Commit**
@@ -1774,6 +1940,8 @@ git commit -m "feat: mcp-tuner agent — server health, timeout config, duplicat
 - Create: `commands/autotune.md`
 
 - [ ] **Step 1: Create the command**
+
+Create file `commands/autotune.md` with the following COMPLETE content:
 
 ```markdown
 ---
@@ -1952,19 +2120,56 @@ Expected: all directories exist with expected files
 
 - [ ] **Step 4: Install plugin locally for testing**
 
-Use the `install-local-plugin` skill to install the plugin from the current directory. This registers the plugin in `~/.claude/settings.json`.
+Register the plugin in `~/.claude/settings.json` by adding the repo path to the `plugins` array. Read the current file first, then add the path.
 
-- [ ] **Step 5: Verify plugin loads**
+The plugin path to add: the absolute path to this repo's root directory (e.g., `/Users/pedro/Developer/bestpractices`).
 
-```bash
-claude --debug 2>&1 | head -20
+Add to `~/.claude/settings.json` under `"plugins"` array. If the array doesn't exist, create it. If the path is already there, skip.
+
+Example — if settings.json has:
+```json
+{
+  "plugins": ["/some/other/plugin"]
+}
 ```
 
-Check that autotune plugin appears in loaded plugins list.
+Change to:
+```json
+{
+  "plugins": ["/some/other/plugin", "/Users/pedro/Developer/bestpractices"]
+}
+```
+
+- [ ] **Step 5: Verify plugin files are complete**
+
+Run each of these commands and verify the output:
+
+```bash
+# All directories exist
+ls agents/ commands/ hooks/ scripts/ skills/autotune-knowledge/heuristics/ skills/autotune-knowledge/references/ state/ tests/
+```
+
+Expected: all directories list their contents without error.
+
+```bash
+# All agent files exist
+ls agents/permissions-tuner.md agents/claudemd-tuner.md agents/model-tuner.md agents/plugin-tuner.md agents/mcp-tuner.md
+```
+
+Expected: all 5 files listed.
+
+```bash
+# All scripts are executable
+test -x scripts/gate-mechanical.sh && echo "gate OK"
+test -x scripts/audit-write.sh && echo "audit OK"
+test -x scripts/session-health.sh && echo "health OK"
+```
+
+Expected: "gate OK", "audit OK", "health OK"
 
 - [ ] **Step 6: Update CLAUDE.md testing section**
 
-Replace the testing section in CLAUDE.md with:
+Read `CLAUDE.md` in the repo root. Find the `## Testing` section (starts around line 36). Replace the entire Testing section with:
 
 ```markdown
 ## Testing
@@ -1974,19 +2179,22 @@ Replace the testing section in CLAUDE.md with:
 bash tests/test-gate-mechanical.sh
 bash tests/test-audit-write.sh
 bash tests/test-session-health.sh
+# Run all:
+bash tests/test-gate-mechanical.sh && bash tests/test-audit-write.sh && bash tests/test-session-health.sh
 ```
 
 ### JSON validation
 ```bash
-jq empty .claude-plugin/plugin.json
-jq empty hooks/hooks.json
+jq empty .claude-plugin/plugin.json && echo "plugin.json OK"
+jq empty hooks/hooks.json && echo "hooks.json OK"
 ```
 
-### Manual testing
-```bash
-/autotune              # Full scan
-/autotune permissions  # Single area
-/autotune --dry-run    # Report only
+### Manual testing (after plugin installed)
+```
+/autotune              # Full scan of all 5 areas
+/autotune permissions  # Single area scan
+/autotune --dry-run    # Report without applying fixes
+/autotune --report-only # Save report to ~/.claude/autotune/report.md
 ```
 ```
 
@@ -1996,7 +2204,3 @@ jq empty hooks/hooks.json
 git add CLAUDE.md
 git commit -m "feat: update testing docs with actual test commands"
 ```
-
-- [ ] **Step 8: Create PR**
-
-Create a PR from the implementation branch to main with a summary of all changes.
