@@ -34,13 +34,27 @@ docs/
 
 ## Testing
 
-Test suite planned but not yet implemented. Manual testing via:
+### Shell script tests
 ```bash
-# Run diagnostics on current environment
-/autotune diagnose
+bash tests/test-gate-mechanical.sh
+bash tests/test-audit-write.sh
+bash tests/test-session-health.sh
+# Run all:
+bash tests/test-gate-mechanical.sh && bash tests/test-audit-write.sh && bash tests/test-session-health.sh
+```
 
-# Validate a specific CLAUDE.md
-/autotune validate-claude-md path/to/CLAUDE.md
+### JSON validation
+```bash
+jq empty .claude-plugin/plugin.json && echo "plugin.json OK"
+jq empty hooks/hooks.json && echo "hooks.json OK"
+```
+
+### Manual testing (after plugin installed)
+```
+/autotune              # Full scan of all 5 areas
+/autotune permissions  # Single area scan
+/autotune --dry-run    # Report without applying fixes
+/autotune --report-only # Save report to ~/.claude/autotune/report.md
 ```
 
 ## Dependencies

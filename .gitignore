@@ -28,3 +28,6 @@ worktrees/
 
 # xgh local state
 .xgh/
+
+# Test temp dirs
+tests/tmp/
