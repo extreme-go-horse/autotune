@@ -77,9 +77,10 @@ autotune/
 
 ### Data Flow
 
-1. `/autotune` spawns relevant agents; each reads source + config, produces findings, applies fixes with consent, persists state to `~/.claude/autotune/`
-2. Hooks read `~/.claude/autotune/rules.json` (compiled output of agents) for enforcement
-3. Agents feed hooks; hooks protect what agents tuned
+1. `/autotune` spawns relevant agents (max 4 parallel to leave 1 subagent slot headroom per UNBREAKABLE_RULES §3); each reads source + config, produces findings, applies fixes with consent, persists state to `~/.claude/autotune/<area>.json`
+2. **Compilation step**: after all agents complete (or fail), orchestrator merges `findings/*.json` into `rules.json` atomically (write to temp file, rename). If an agent failed, its area is excluded from compilation and marked as `"error"` in `last-run.json`.
+3. Hooks read `~/.claude/autotune/rules.json` (compiled output) for enforcement
+4. Agents feed hooks; hooks protect what agents tuned
 
 **Key principle**: Agents are write-heavy (diagnose and fix). Hooks are read-only (validate against established rules).
 
@@ -88,10 +89,12 @@ autotune/
 | Layer | Type | Runtime | Token cost | When |
 |-------|------|---------|------------|------|
 | Mechanical | Shell script | O(1), deterministic | 0 | PreToolUse Write/Edit |
-| Semantic | Skill invoked by model | O(n), heuristic | Few (haiku) | PreToolUse on hot files |
+| Semantic | Skill invoked by model (best-effort) | O(n), heuristic | Skill payload (haiku) | PreToolUse on hot files |
 | Deep | Full agent on-demand | O(n²), cross-analysis | More (sonnet/opus) | `/autotune` command |
 
 **Boundary rule**: If the check is O(1) and deterministic (read a JSON, verify a file exists) → hook. If it requires analysis, heuristics, or decisions → agent.
+
+**Important**: Semantic enforcement is best-effort (model-mediated, not guaranteed). The model may skip skill invocation under context pressure. Critical guardrails MUST remain in the mechanical layer. The semantic layer is advisory — it catches what it can, but the system must be safe without it.
 
 ---
 
@@ -108,6 +111,7 @@ Each agent follows a standard contract:
 
 **Diagnostics:**
 - Reads `settings.json` (all levels) + analyzes usage patterns in session transcripts (`~/.claude/projects/*/sessions/*/` JSONL files)
+- **Privacy gate**: before transcript access, prompts user: "Autotune wants to analyze session history to optimize permissions. Only tool_use/tool_result events are parsed (not full conversation content). Allow?" Transcript path structure is an implementation contract — version-check on startup.
 - Detects: tools approved repeatedly but without allow rule, conflicting deny/allow, sensitive paths without protection, suboptimal permission mode
 
 **Fixes:**
@@ -119,7 +123,7 @@ Each agent follows a standard contract:
 ### 4.2 claudemd-tuner
 
 **Diagnostics:**
-- Measures token weight of each hot file (estimated as `char_count / 4`, or via `wc -c` for quick approximation)
+- Measures token weight of each hot file (estimated as `char_count / 3` — conservative multiplier for markdown-heavy content; `char/4` underestimates by ~30% for code/markup)
 - Detects: bloat (dead lines, redundancy), conflicting instructions, content that should be skill/command, missing `@BEST_PRACTICES.md`
 - Cross-references: CLAUDE.md global vs project vs MEMORY.md — finds overlaps
 
@@ -239,6 +243,8 @@ Runs on PostToolUse Write/Edit. Logs changes to hot files:
 {"ts":"2026-04-01T15:30:00Z","file":"~/.claude/CLAUDE.md","action":"edit","lines_delta":12,"token_weight_delta":340}
 ```
 
+**Rotation**: max 10,000 entries (~1MB). When exceeded, truncate oldest 50%. Configurable via `config.json` threshold `audit_max_entries`.
+
 ### Session Health (`session-health.sh`)
 
 Runs on SessionStart. Quick scan:
@@ -246,7 +252,7 @@ Runs on SessionStart. Quick scan:
 - Total token weight of hot files
 - Last autotune run (warn if > 7 days)
 - rules.json integrity (exists, parseable)
-- MCP servers responding (quick ping)
+- MCP servers responding (parallel ping, max 2s per server, total cap 5s — skip unresponsive)
 
 Output: status line — "autotune: healthy" or "autotune: 2 warnings — run `/autotune` for details"
 
@@ -279,9 +285,10 @@ allowed-tools: Bash(cat:*), Bash(wc:*), Bash(jq:*), Read, Glob, Grep, Write, Edi
 
 1. Parse arguments (area or all, flags)
 2. Read previous state (`~/.claude/autotune/*.json`) for drift comparison
-3. Spawn relevant agent(s) — in parallel if `all`
-4. Each agent returns `findings[]` in standard format
-5. Consolidate findings, sort by severity
+3. Spawn relevant agent(s) — max 4 parallel if `all` (headroom per §3), 5th runs after first completes
+4. Each agent returns `findings[]` in standard format. If an agent fails/times out: mark area as `"error"` in `last-run.json`, surface failure in report, exclude from rules.json compilation
+5. Compile `rules.json` atomically (write-tmp + rename) from all successful agents' findings
+6. Consolidate findings, sort by severity
 6. Present report to user
 7. If not `--dry-run`/`--report-only`: apply fixes with consent per finding
 8. Persist new state
@@ -417,6 +424,7 @@ User-facing file, @-included in their CLAUDE.md. Contains curated wisdom:
 
 ```json
 {
+  "schema_version": 1,
   "compiled_at": "2026-04-01T15:30:00Z",
   "hot_files": [
     "~/.claude/CLAUDE.md",
@@ -425,7 +433,9 @@ User-facing file, @-included in their CLAUDE.md. Contains curated wisdom:
     "~/.claude/MEMORY.md"
   ],
   "block_rules": [
-    {"pattern": "\\.env$", "reason": "Sensitive file without deny rule"},
+    {"pattern": "\\.env(\\..+)?$", "reason": "Sensitive file (.env, .env.local, .env.production, etc.)"},
+    {"pattern": "credentials", "reason": "Credentials file without deny rule"},
+    {"pattern": "secrets/", "reason": "Secrets directory without deny rule"},
     {"pattern": "DISABLE_PROMPT_CACHING", "reason": "Caching sabotage"}
   ],
   "warn_rules": [
@@ -433,6 +443,8 @@ User-facing file, @-included in their CLAUDE.md. Contains curated wisdom:
   ]
 }
 ```
+
+**Schema versioning**: `gate-mechanical.sh` checks `schema_version` on every invocation. If unrecognized version → exit 2 with "autotune rules.json schema mismatch — run `/autotune` to recompile".
 
 ### scores.json
 
@@ -450,6 +462,12 @@ User-facing file, @-included in their CLAUDE.md. Contains curated wisdom:
 ```
 
 SessionStart hook reads `scores.json` and shows: **"autotune: 72/100 (claudemd drifting)"**
+
+### Scoring Formula
+
+Score per area: `100 - (critical_count * 20 + warning_count * 5 + info_count * 1)`, clamped to 0-100.
+Overall: weighted average of area scores (equal weights in v1).
+Trend: delta from previous run's score for that area (e.g., `"+5"` means score improved by 5 points since last `/autotune`).
 
 ### Idempotency Guarantees
 

@@ -88,7 +88,7 @@ Each practice traces back to specific source code in `~/.claude/cc-original-src/
 - PreToolUse hooks can block actions with exit code 2 — use for guardrails
 - Keep hook scripts fast (<100ms) — they run on the critical path of every tool execution
 - PostToolUse hooks are good for logging and auditing — they don't block the action
-- Available events: PreToolUse, PostToolUse, UserPromptSubmit, SessionStart, SessionEnd, PreCompact, PostCompact, Stop, SubagentStop
+- Common events (see cc-original-src for full list): PreToolUse, PostToolUse, UserPromptSubmit, SessionStart, SessionEnd, PreCompact, PostCompact, Stop, SubagentStop, FileChanged, ConfigChange, TaskCreated, TaskCompleted
 ```
 
 **Token cost**: ~170 tokens. **Value**: prevents silent hook failures and performance issues.
@@ -167,9 +167,11 @@ Each practice traces back to specific source code in `~/.claude/cc-original-src/
 The `claudemd-tuner` agent handles injection:
 
 1. Checks if `@BEST_PRACTICES.md` already exists in user's CLAUDE.md
-2. If not, proposes adding `@~/.claude/plugins/*/autotune/skills/autotune-knowledge/references/BEST_PRACTICES.md` (resolves to plugin install path)
-3. Shows diff of what will be added to context
-4. Applies with consent
-5. Sets `best_practices_injected: true` in `~/.claude/autotune/config.json`
+2. If not, copies `BEST_PRACTICES.md` from plugin root to a stable location: `~/.claude/BEST_PRACTICES.md` (avoids dependency on plugin cache path which uses `cache/<marketplace>/<plugin>/<version>/` — `@-include` does not support glob expansion)
+3. Proposes adding `@~/.claude/BEST_PRACTICES.md` to user's CLAUDE.md
+4. Shows diff of what will be added to context
+5. Applies with consent
+6. Sets `best_practices_injected: true` in `~/.claude/autotune/config.json`
+7. On plugin updates: compares installed BEST_PRACTICES.md version with `~/.claude/BEST_PRACTICES.md`, proposes update if newer
 
 Idempotent: re-running when already injected → skip.
