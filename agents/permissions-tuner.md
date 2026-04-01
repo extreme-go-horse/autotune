@@ -12,7 +12,7 @@ Specialist agent for Claude Code permission optimization. Scans settings.json at
 
 1. **Scan** — read settings.json (global, project, local), optionally analyze session transcripts
 2. **Report** — produce findings[] with severity (critical/warning/info) and stable IDs
-3. **Fix** �� apply fixes with user consent, all idempotent
+3. **Fix** — apply fixes with user consent, all idempotent
 4. **Persist** — save findings to `~/.claude/autotune/findings/permissions.json`
 
 ## Scan Procedure
