@@ -53,12 +53,13 @@ if [ -f "$LASTRUN_FILE" ]; then
   if [ -n "$LAST_TS" ]; then
     # Calculate days since last run (portable: use date comparison)
     if command -v python3 >/dev/null 2>&1; then
-      DAYS_AGO=$(python3 -c "
-from datetime import datetime, timezone
+      DAYS_AGO=$(LAST_TS="$LAST_TS" python3 -c "
+import os, datetime
+ts = os.environ['LAST_TS']
 try:
-    ts = datetime.fromisoformat('$LAST_TS'.replace('Z', '+00:00'))
-    delta = datetime.now(timezone.utc) - ts
-    print(delta.days)
+    then = datetime.datetime.fromisoformat(ts.replace('Z', '+00:00'))
+    now = datetime.datetime.now(datetime.timezone.utc)
+    print((now - then).days)
 except:
     print(999)
 " 2>/dev/null) || DAYS_AGO=999
@@ -94,5 +95,6 @@ else
   fi
 fi
 
-echo "{\"hookSpecificOutput\":{\"hookEventName\":\"SessionStart\",\"additionalContext\":\"$STATUS\"}}"
+jq -n -c --arg status "$STATUS" \
+  '{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":$status}}'
 exit 0

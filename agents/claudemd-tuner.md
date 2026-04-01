@@ -26,6 +26,10 @@ Read and measure token weight (chars / 3) for each hot file:
 - `~/.claude/MEMORY.md`
 
 Resolve `@`-includes: for each `@path` line, read the included file and add its weight.
+- Absolute paths (starting with `~` or `/`): resolve as-is
+- Relative paths: resolve relative to the directory containing the CLAUDE.md file
+- Missing files: skip with warning, do not fail
+- Circular includes: track visited paths, skip if already visited (max depth: 5)
 
 ### Step 2: Check CLAUDE.md Size
 
