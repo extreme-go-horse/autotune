@@ -45,7 +45,7 @@ Each practice traces back to specific source code in `~/.claude/cc-original-src/
 ## Token Economy
 - Sub-agents don't consume parent context — delegate freely, they get their own window
 - CLAUDE.md is loaded every turn — every line costs tokens across the entire session
-- Use @-includes to keep CLAUDE.md lean; referenced files load on demand, not upfront
+- Use @-includes to keep CLAUDE.md modular; included files are injected every turn, so they still cost tokens — but splitting keeps each file focused and editable
 - Prompt caching saves ~80% on repeated context — never disable without a specific reason
 - `ctx_execute_file` keeps analysis output in sandbox; `Read` pulls it into your context window
 - Compaction quality improves when session memory is fresh — the system uses it as a guide
@@ -166,7 +166,7 @@ Each practice traces back to specific source code in `~/.claude/cc-original-src/
 
 The `claudemd-tuner` agent handles injection:
 
-1. Checks if `@BEST_PRACTICES.md` already exists in user's CLAUDE.md
+1. Checks if `@~/.claude/BEST_PRACTICES.md` (exact canonical path) already exists in user's CLAUDE.md
 2. If not, copies `BEST_PRACTICES.md` from plugin root to a stable location: `~/.claude/BEST_PRACTICES.md` (avoids dependency on plugin cache path which uses `cache/<marketplace>/<plugin>/<version>/` — `@-include` does not support glob expansion)
 3. Proposes adding `@~/.claude/BEST_PRACTICES.md` to user's CLAUDE.md
 4. Shows diff of what will be added to context

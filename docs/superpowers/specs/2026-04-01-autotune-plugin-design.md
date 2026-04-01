@@ -77,7 +77,7 @@ autotune/
 
 ### Data Flow
 
-1. `/autotune` spawns relevant agents (max 4 parallel to leave 1 subagent slot headroom per UNBREAKABLE_RULES §3); each reads source + config, produces findings, applies fixes with consent, persists state to `~/.claude/autotune/<area>.json`
+1. `/autotune` spawns relevant agents (max 4 parallel to leave at least one subagent slot free for other tools and system use); each reads source + config, produces findings, applies fixes with consent, persists state to `~/.claude/autotune/<area>.json`
 2. **Compilation step**: after all agents complete (or fail), orchestrator merges `findings/*.json` into `rules.json` atomically (write to temp file, rename). If an agent failed, its area is excluded from compilation and marked as `"error"` in `last-run.json`.
 3. Hooks read `~/.claude/autotune/rules.json` (compiled output) for enforcement
 4. Agents feed hooks; hooks protect what agents tuned
@@ -116,8 +116,8 @@ Each agent follows a standard contract:
 
 **Fixes:**
 - Promotes frequently-approved tools to allow rules
-- Removes redundant/conflicting denys
-- Adds denys for sensitive paths (.env, secrets/, credentials)
+- Removes redundant/conflicting denies
+- Adds denies for sensitive paths (.env, secrets/, credentials)
 - Suggests defaultMode based on usage profile
 
 ### 4.2 claudemd-tuner
@@ -285,13 +285,13 @@ allowed-tools: Bash(cat:*), Bash(wc:*), Bash(jq:*), Read, Glob, Grep, Write, Edi
 
 1. Parse arguments (area or all, flags)
 2. Read previous state (`~/.claude/autotune/*.json`) for drift comparison
-3. Spawn relevant agent(s) — max 4 parallel if `all` (headroom per §3), 5th runs after first completes
-4. Each agent returns `findings[]` in standard format. If an agent fails/times out: mark area as `"error"` in `last-run.json`, surface failure in report, exclude from rules.json compilation
-5. Compile `rules.json` atomically (write-tmp + rename) from all successful agents' findings
-6. Consolidate findings, sort by severity
+3. Spawn relevant agent(s) — max 4 parallel if `all`, 5th runs after first completes
+4. Each agent returns `findings[]` in standard format. If an agent fails/times out: mark area as `"error"` in `last-run.json`, surface failure in report, exclude from compilation
+5. Consolidate findings, sort by severity
 6. Present report to user
 7. If not `--dry-run`/`--report-only`: apply fixes with consent per finding
-8. Persist new state
+8. Recompile `rules.json` atomically (write-tmp + rename) from **post-fix state** — ensures hooks enforce the corrected config, not stale pre-fix findings
+9. Persist new state + updated scores
 
 ### Finding Format
 
@@ -415,7 +415,7 @@ User-facing file, @-included in their CLAUDE.md. Contains curated wisdom:
     "mcp_timeout_ms": 5000
   },
   "enabled_checks": ["permissions", "claudemd", "model", "plugins", "mcp"],
-  "auto_apply_severity": "none",  // v1: always consent. v2 may support "info" (auto) / "warning" (ask) / "critical" (ask)
+  "auto_apply_severity": "none"
   "best_practices_injected": false
 }
 ```
