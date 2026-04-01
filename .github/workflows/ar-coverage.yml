@@ -1,0 +1,17 @@
+name: AR Coverage
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+jobs:
+  ar-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check AR label
+        run: |
+          LABELS='${{ toJSON(github.event.pull_request.labels.*.name) }}'
+          if echo "$LABELS" | grep -qE '"ar-approved"|"ar-exempt"'; then
+            echo "AR gate passed"
+          else
+            echo "::error::Missing ar-approved or ar-exempt label"
+            exit 1
+          fi

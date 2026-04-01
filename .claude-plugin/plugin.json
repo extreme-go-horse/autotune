@@ -1,0 +1,8 @@
+{
+  "name": "autotune",
+  "version": "0.1.0",
+  "description": "Claude Code setup optimizer — diagnose, autotune, and enforce best practices",
+  "author": "Pedro Almeida",
+  "license": "MIT",
+  "keywords": ["autotune", "setup", "optimizer", "diagnostics", "best-practices", "claude-code"]
+}
