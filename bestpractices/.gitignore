@@ -31,7 +31,3 @@ worktrees/
 
 # Test temp dirs
 tests/tmp/
-
-# Runtime state (bestpractices module)
-bestpractices/.omx/
-bestpractices/.claude/scheduled_tasks.lock

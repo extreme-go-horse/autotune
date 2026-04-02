@@ -1,4 +1,18 @@
 {
-  "published": false,
-  "strict": true
+  "name": "autotune-local",
+  "owner": {
+    "name": "Pedro Almeida",
+    "url": "https://github.com/ipedro"
+  },
+  "plugins": [
+    {
+      "name": "autotune",
+      "source": {
+        "source": "github",
+        "repo": "extreme-go-horse/autotune"
+      },
+      "description": "Claude Code setup optimizer — diagnose, autotune, and enforce best practices",
+      "version": "0.1.0"
+    }
+  ]
 }

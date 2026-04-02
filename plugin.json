@@ -1,0 +1,13 @@
+{
+  "name": "autotune",
+  "version": "0.1.0",
+  "description": "Claude Code setup optimizer — diagnose, autotune, and enforce best practices",
+  "author": {
+    "name": "Pedro Almeida",
+    "url": "https://github.com/ipedro"
+  },
+  "homepage": "https://github.com/extreme-go-horse/autotune",
+  "repository": "https://github.com/extreme-go-horse/autotune",
+  "license": "MIT",
+  "keywords": ["autotune", "setup", "optimizer", "diagnostics", "best-practices", "claude-code"]
+}
